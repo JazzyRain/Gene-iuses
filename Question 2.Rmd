@@ -15,8 +15,43 @@ Next, we will select the columns that are going to be used to analyze our biolog
 dat <- dat %>% select(Coat_colour, Gender_status, Health, Agitated, NO_Agg, Train, AttenSeek)
 summary(dat)
 ```
-As all of our non-predictor variables (coat colour, gender status, and health) are categorical variables and our predictor variables are numeric (agitated, non-owner directed agression, trainanbility, and attention seeking) we are going to create a loop that performs linear models and ANOVA tests for each combination of predictor and non predictor variables. 
-```{r}
+As all of our non-predictor variables (coat colour, gender status, and health) are categorical and our predictor variables are numeric (agitated, non-owner directed agression, trainanbility, and attention seeking) we are going to create loops that performs linear models and ANOVA tests for each combination of predictor and non predictor variables. 
 
+Coat Colour
+```{r}
+pred <- names(dat)[4:7]
+
+#Coat Colour
+resultsCoat <- rep(NA, length(pred))
+PvalCoat <- rep(NA, length(pred))
+
+for(i in 1:length(pred)){
+  myformula <- paste('Coat_colour~', pred[i])
+  mod <- lm(as.formula(myformula), data = dat)
+  resultsCoat[i] <- summary(aov(mod))
+}
+resultsCoat
+```
+Gender Status 
+```{r}
+resultsGender <- rep(NA, length(pred))
+
+for(i in 1:length(pred)){
+  myformula <- paste('Gender_status~', pred[i])
+  mod <- lm(as.formula(myformula), data = dat)
+  resultsGender[i] <- summary(aov(mod))
+}
+resultsGender
+```
+Health
+```{r}
+resultsHealth <- rep(NA, length(pred))
+PvalHealth <- rep(NA, length(pred))
+for(i in 1:length(pred)){
+  myformula <- paste('Health~', pred[i])
+  mod <- lm(as.formula(myformula), data = dat)
+  resultsHealth[i] <- summary(aov(mod))
+}
+resultsHealth
 ```
 
