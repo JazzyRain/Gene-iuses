@@ -1,0 +1,22 @@
+---
+title: "Question 2"
+output: html_document
+---
+
+To begin, we will import our dataset and all of the packages that will be used for this question. 
+```{r}
+library(tidyverse)
+
+dat <- read.csv("./traits.csv")
+summary(dat)
+```
+Next, we will select the columns that are going to be used to analyze our biological question. 
+```{r}
+dat <- dat %>% select(Coat_colour, Gender_status, Health, Agitated, NO_Agg, Train, AttenSeek)
+summary(dat)
+```
+As all of our non-predictor variables (coat colour, gender status, and health) are categorical variables and our predictor variables are numeric (agitated, non-owner directed agression, trainanbility, and attention seeking) we are going to create a loop that performs linear models and ANOVA tests for each combination of predictor and non predictor variables. 
+```{r}
+
+```
+
