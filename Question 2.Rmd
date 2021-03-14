@@ -1,0 +1,109 @@
+---
+title: "Question 2"
+output: html_document
+---
+
+To begin, we will import our dataset and all of the packages that will be used for this question. 
+```{r}
+library(tidyverse)
+
+dat <- read.csv("./traits.csv")
+summary(dat)
+```
+Next, we will select the columns that are going to be used to analyze our biological question. 
+```{r}
+dat <- dat %>% select(Coat_colour, Gender_status, Health, Agitated, NO_Agg, Train, AttenSeek)
+summary(dat)
+```
+As all of our non-predictor variables (coat colour, gender status, and health) are categorical and our predictor variables are numeric (agitated, non-owner directed agression, trainanbility, and attention seeking) we are going to create a loop that performs linear models and ANOVA tests for each combination of predictor and non predictor variables. 
+
+Coat Colour
+```{r}
+pred <- names(dat)[4:7]
+
+#Coat Colour
+resultsCoat <- rep(NA, length(pred))
+PvalCoat <- rep(NA, length(pred))
+
+for(i in 1:length(pred)){
+  myformula <- paste('Coat_colour~', pred[i])
+  mod <- lm(as.formula(myformula), data = dat)
+  resultsCoat[i] <- summary(aov(mod))
+}
+resultsCoat
+```
+Gender Status 
+```{r}
+resultsGender <- rep(NA, length(pred))
+
+for(i in 1:length(pred)){
+  myformula <- paste('Gender_status~', pred[i])
+  mod <- lm(as.formula(myformula), data = dat)
+  resultsGender[i] <- summary(aov(mod))
+}
+resultsGender
+```
+Health
+```{r}
+resultsHealth <- rep(NA, length(pred))
+PvalHealth <- rep(NA, length(pred))
+
+for(i in 1:length(pred)){
+  myformula <- paste('Health~', pred[i])
+  mod <- lm(as.formula(myformula), data = dat)
+  resultsHealth[i] <- summary(aov(mod))
+}
+resultsHealth
+```
+
+
+```{r}
+pred <- names(dat)[4:7]
+
+#Coat Colour
+resultsCoat <- rep(NA, length(pred))
+PvalCoat <- rep(NA, length(pred))
+
+#Gender
+resultsGender <- rep(NA, length(pred))
+PvalGender <- rep(NA, length(pred))
+
+#Health Status
+resultsHealth <- rep(NA, length(pred))
+PvalHealth <- rep(NA, length(pred))
+
+
+for(i in 1:length(pred)){
+  myformulaCoat <- paste('Coat_colour~', pred[i])
+  modCoat <- lm(as.formula(myformulaCoat), data = dat)
+  resultsCoat[i] <- summary(aov(modCoat))
+  
+  myformulaHealth <- paste('Health~', pred[i])
+  modHealth <- lm(as.formula(myformulaHealth), data = dat)
+  resultsHealth[i] <- summary(aov(modHealth))
+  
+  myformulaGender<- paste('Gender_status~', pred[i])
+  modGender <- lm(as.formula(myformulaGender), data = dat)
+  resultsGender[i] <- summary(aov(modGender))
+}
+
+print(resultsCoat)
+print(resultsHealth)
+print(resultsGender)
+```
+
+#vvvv Rough Tukey attempt vvvv
+
+```{r}
+lmCoat<-lm(Coat_colour ~ as.factor(Agitated) + as.factor(NO_Agg) + as.factor(Train) + as.factor(AttenSeek), data = dat)
+aovCoat<-aov(lmCoat)
+```
+
+```{r}
+summary(aovCoat)
+```
+
+```{r}
+(TukeyHSD(aovCoat))
+```
+
