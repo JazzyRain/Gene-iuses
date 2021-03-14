@@ -5,8 +5,10 @@ install.packages(c("reshape2","rentrez"))
 library(genbankr)
 library(annotate)
 library(ape)
+library(ggtree)
 
-BbID<-GBAccession("KC984225.1")#using NCBI I seached for 16S ribosomal RNA, and canis lupus familiaris [organism], i find this accession number
+
+BbID<-GBAccession("Q9ZZ64")#using NCBI I seached for CO1, and canis lupus familiaris [organism], i find this accession number
 BbGbk<-readGenBank(BbID)##use the accession number to browse through the gene bank 
 
 ##Pairwise alignment
@@ -15,9 +17,19 @@ BbGbkBLAST<-blastSequences(paste(BbGbk@sequence),as = 'data.frame',hitListSize =
 BbHitsDF<-data.frame(ID=BbGbkBLAST$Hit_accession,Seq=BbGbkBLAST$Hsp_hseq,stringsAsFactors = FALSE)
 
 
-library(rtracklayer)
-test_path <- system.file("tests", package = "rtracklayer")
-test_bed <- file.path(test_path, "test.bed")
+##muscle+ alignemnt inspection
+BbHitSeqs<-read.GenBank(BbGbkBLAST$Hit_accession[1:3])
+BbHitsDNA<-sapply(BbHitsDF$Seq,strsplit,split="")## convert the object to one with seperate column for each basepair using strsplit()and sapply() to split the DA for each row
+names(BbHitsDNA)<-paste(1:nrow(BbHitsDF),BbHitsDF$ID,sep="_")## give each sequence unique names.
+BbHitsDNA<-as.DNAbin(BbHitsDNA)## convert it into a DNAbin object 
+BbAlign<-muscle(BbHitsDNA,quiet=F)## run muscle on DNAbin object, allowing alignment 
+checkAlignment(BbAlign,what=3)## to inspect alignments and determine Shannon indexes relatives to the sequence position, providing cues to diversity
 
-test <- import(test_bed, format = "bed")
-test
+#Distance Matreix 
+BbDM<-dist.dna(BbAlign, model="K80") #use distance model K80, this estimates a pairwise distance matrix from the sequence data
+BbDMmat<-as.matrix(BbDM)
+## tree building 
+BbTree<-nj(BbDM)
+ggtree(BbTree,layout="rectangular") + geom_tiplab()
+
+
