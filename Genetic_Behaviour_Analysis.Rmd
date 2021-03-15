@@ -1,0 +1,150 @@
+---
+title: "Genetic_Behaviour_Correlations"
+author: "Alex Tsiofas"
+date: "12/03/2021"
+output: html_document
+---
+
+```{r warning = F, message=F}
+library(BiocManager)
+library(genbankr)
+library(rentrez)
+library(annotate)
+library(ape)
+library(reshape2)
+library(ggplot2)
+```
+
+The 4 Genes that have been found to be associated with dog behaviour in this study are
+DRD4, TH, OXTR, SLC6A
+
+
+## DRD4 Alignment
+```{r}
+#Pulling DRD4 Sequence from GenBank and reading it
+DRD4_Lab <- GBAccession("XM_038424041.1")
+DRD4_LabGBk <- readGenBank(DRD4_Lab)
+
+#Blast search to find close sequences to Canis lupus familiaris DRD4 Sequence
+BLASTSearch_DRD4 <- blastSequences(paste(DRD4_LabGBk@sequence), as = 'data.frame', hitListSize = 20, timeout = 600)
+
+#making a simple dataframe with just ID numbers and sequences
+DRD4HitsDF <- data.frame(ID=BLASTSearch_DRD4$Hit_accession, Seq=BLASTSearch_DRD4$Hsp_hseq, stringsAsFactors = FALSE)
+head(DRD4HitsDF)
+
+#Adding the query sequence to the dataframe
+query_row <- c("query", paste(DRD4_LabGBk@sequence))
+DRD4HitsDF <- rbind(DRD4HitsDF, query_row)
+
+#turning the dataframe into a DNABin object by splitting the sequences so each nucleotide is its own string
+DRD4Hits <- sapply(DRD4HitsDF$Seq, strsplit, split="")
+#adding an index number
+names(DRD4Hits) <- paste(1:nrow(DRD4HitsDF), DRD4HitsDF$ID, sep="_")
+#then converting to a DNABin object
+DRD4Hits <- as.DNAbin(DRD4Hits)
+
+#Using Multiple Sequence Comparison by Log-Expectation (MUSCLE) to align the Canis lupus DRD4 sequence with the top blast searches
+DRD4_align <- muscle(DRD4Hits)
+
+checkAlignment(DRD4_align, what = 1)
+```
+### DRD4 Visualization
+```{r}
+DRD4_DM <- dist.dna(DRD4_align, model="K80")
+
+DRD4_DMmat<-as.matrix(DRD4_DM)
+
+PDat <- melt(DRD4_DMmat)
+
+ggplot(data = PDat, aes(x=Var1, y=Var2, fill=value)) + 
+  geom_tile()
+```
+
+## TH Alignment
+```{r}
+TH_Lab <- GBAccession("NM_001002966.1")
+
+TH_LabGBk <- readGenBank(TH_Lab)
+
+BLASTSearch_TH <- blastSequences(paste(TH_LabGBk@sequence), as = 'data.frame', hitListSize = 20, timeout = 600)
+
+#making a simple dataframe with just ID numbers and sequences
+THHitsDF <- data.frame(ID=BLASTSearch_TH$Hit_accession, Seq=BLASTSearch_TH$Hsp_hseq, stringsAsFactors = FALSE)
+
+#Adding the query sequence to the dataframe
+query_row <- c("query", paste(TH_LabGBk@sequence))
+THHitsDF <- rbind(THHitsDF, query_row)
+
+#turning the dataframe into a DNABin object by splitting the sequences so each nucleotide is its own string
+THHits <- sapply(THHitsDF$Seq, strsplit, split="")
+#adding an index number
+names(THHits) <- paste(1:nrow(THHitsDF), THHitsDF$ID, sep="_")
+#then converting to a DNABin object
+THHits <- as.DNAbin(THHits)
+
+#Using Multiple Sequence Comparison by Log-Expectation (MUSCLE) to align the Canis lupus DRD4 sequence with the top blast searches
+TH_align <- muscle(THHits)
+
+checkAlignment(TH_align, what = 1)
+```
+
+## OXTR Alignment
+```{r}
+OXTR_Lab <- GBAccession("NM_001198659.1")
+  
+OXTR_LabGBk <- readGenBank(OXTR_Lab)
+
+BLASTSearch_OXTR <- blastSequences(paste(OXTR_LabGBk@sequence), as = 'data.frame', hitListSize = 20, timeout = 600)
+
+#making a simple dataframe with just ID numbers and sequences
+OXTRHitsDF <- data.frame(ID=BLASTSearch_OXTR$Hit_accession, Seq=BLASTSearch_OXTR$Hsp_hseq, stringsAsFactors = FALSE)
+
+#Adding the query sequence to the dataframe
+query_row <- c("query", paste(OXTR_LabGBk@sequence))
+OXTRHitsDF <- rbind(OXTRHitsDF, query_row)
+
+#turning the dataframe into a DNABin object by splitting the sequences so each nucleotide is its own string
+OXTRHits <- sapply(OXTRHitsDF$Seq, strsplit, split="")
+#adding an index number
+names(OXTRHits) <- paste(1:nrow(OXTRHitsDF), OXTRHitsDF$ID, sep="_")
+#then converting to a DNABin object
+OXTRHits <- as.DNAbin(OXTRHits)
+
+#Using Multiple Sequence Comparison by Log-Expectation (MUSCLE) to align the Canis lupus DRD4 sequence with the top blast searches
+OXTR_align <- muscle(OXTRHits)
+
+checkAlignment(OXTR_align, what = 1)
+```
+
+## SLC6A Alignment
+```{r}
+SLC6A_Lab <- GBAccession("XM_038426923.1")
+
+SLC6A_LabGBk <- readGenBank(SLC6A_Lab)
+
+BLASTSearch_SLC6A <- blastSequences(paste(SLC6a_LabGBk@sequence), as = 'data.frame', hitListSize = 20, timeout = 600)
+
+#making a simple dataframe with just ID numbers and sequences
+SLC6AHitsDF <- data.frame(ID=BLASTSearch_SLC6A$Hit_accession, Seq=BLASTSearch_SLC6A$Hsp_hseq, stringsAsFactors = FALSE)
+
+#Adding the query sequence to the dataframe
+query_row <- c("query", paste(SLC6A_LabGBk@sequence))
+SLC6AHitsDF <- rbind(SLC6AHitsDF, query_row)
+
+#turning the dataframe into a DNABin object by splitting the sequences so each nucleotide is its own string
+SLC6AHits <- sapply(SLC6AHitsDF$Seq, strsplit, split="")
+#adding an index number
+names(SLC6AHits) <- paste(1:nrow(SLC6AHitsDF), SLC6AHitsDF$ID, sep="_")
+#then converting to a DNABin object
+SLC6AHits <- as.DNAbin(SLC6AHits)
+
+#Using Multiple Sequence Comparison by Log-Expectation (MUSCLE) to align the Canis lupus DRD4 sequence with the top blast searches
+SLC6A_align <- muscle(SLC6AHits)
+
+checkAlignment(SLC6A_align, what = 1)
+```
+
+
+
+
+
