@@ -11,15 +11,19 @@ Neutering categories - Male entire (n = 451), male neutered
 are significantly different from the others in any of the 
 behavioural traits
 
-## Importing the Traits csv file from Git
-```{r}
-traits_dat <- read.csv("Gene-iuses/traits.csv")
+## Loading Libraries and Importing the Traits csv file from Git
+```{r warning = F, message=F}
+library(ggplot2)
+library(dplyr)
+library(cowplot)
+
+traits_dat <- read.csv("traits.csv")
 
 traits_dat$Gender_status <- as.factor(traits_dat$Gender_status)
 ```
 
 ## Plotting the Data
-```{r fig.height= 8}
+```{r fig.height= 8, fig.width = 8, warning=F}
 #loop that creates a boxplot for each of the traits in the list, 
 #plotted against gender/neutering status
 for (i in 8:19){
@@ -40,10 +44,14 @@ plot_grid(Agitated_plot, AttenSeek_plot, Bark_plot, Excite_plot, Fetch_plot, HO_
 ```
 
 ## Analysis
-Within each behaviour we are comparing whether the mean ranking of the behaviour significantly differs between  the gender/neuter status groups. We use an Anova to compare these group means
-```{r}
-#makinga a lsit of the behaviour column names
-behaviours1 <- traits_dat[8:19]
+Within each behaviour we are comparing whether the mean ranking of the behaviour significantly differs between  the gender/neuter status groups. We use an ANOVA to compare these group means
+```{r warning = F}
+#making a list of the behaviour column names
+behaviours1 <- names(traits_dat)[8:19]
+
+#initiating a data frame to hold the anova statistics
+sexneuter_anovas <- data.frame(matrix(nrow = 12, ncol = 3))
+names(sexneuter_anovas) <- c("Behaviour", "F_Statistic", "P_Value")
 
 for (i in 1:length(behaviours1)){
   #looking at how gender status impacts each behaviour
@@ -51,8 +59,11 @@ for (i in 1:length(behaviours1)){
   #running the anova with the specified function
   analysis1 <- aov(as.formula(rel1), data = traits_dat)
   #assigning the analysis results to an appropriate variable name
-  assign(x = paste(behaviours[i], "_anova"), analysis1)
+  sexneuter_anovas$Behaviour[i] <- behaviours1[i]
+  sexneuter_anovas$F_Statistic[i] <- summary(analysis1)[[1]][["F value"]]
+  sexneuter_anovas$P_Value[i] <- summary(analysis1)[[1]][["Pr(>F)"]]
 }
 
+print(sexneuter_anovas)
 ```
 
