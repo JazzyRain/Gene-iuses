@@ -7,8 +7,7 @@ library(annotate)
 library(ape)
 library(ggtree)
 
-
-BbID<-GBAccession("Q9ZZ64")#using NCBI I seached for CO1, and canis lupus familiaris [organism], i find this accession number
+BbID<-GBAccession("NC_002008.4")#using NCBI I seached for CO1, and canis lupus familiaris [organism], i find this accession number
 BbGbk<-readGenBank(BbID)##use the accession number to browse through the gene bank 
 
 ##Pairwise alignment
