@@ -7,17 +7,64 @@ output: html_document
 
 ```{r warning = F, message=F}
 library(BiocManager)
+library(dplyr)
 library(genbankr)
 library(rentrez)
 library(annotate)
 library(ape)
 library(reshape2)
 library(ggplot2)
+library(ggtree)
 ```
 
-The 4 Genes that have been found to be associated with dog behaviour in this study are
-DRD4, TH, OXTR, SLC6A
+The results of this study were consistent with those of Flint (2003) and Willis-Owen and Flint (2006) suggestings that many of the traits of interest were polygenic. However some strong associations of specific genes with traits were still uncovered. 
 
+One of the largest effect sizes was found with CFA20 - SNPs in this gene were found to be correlated with the NoiseFear trait. Let's generate an alignment and tree with species that have similar sequences to the Canis lupus familiaris CFA20 gene
+## CADPS2 Alignment
+```{r}
+CAD_Lab <- GBAccession("XM_038687133.1")
+  
+CAD_LabGBk <- readGenBank(CAD_Lab)
+
+BLASTSearch_CAD <- blastSequences(paste(CAD_LabGBk@sequence), as = 'data.frame', hitListSize = 40, timeout = 600)
+
+#making a simple dataframe with just ID numbers and sequences
+CADHitsDF <- data.frame(ID=BLASTSearch_CAD$Hit_def, Seq=BLASTSearch_CAD$Hsp_hseq, stringsAsFactors = FALSE)
+
+#changing ID to just species name with regular expressions
+CADHitsDF$ID <- gsub("PREDICTED: (.+) calcium.+", "\\1", CADHitsDF$ID)
+CADHitsDF$ID <- gsub("PREDICTED: (.+) Ca.+", "\\1", CADHitsDF$ID)
+
+#making sure theres no replicate hits from the same species
+CADHitsDF <- CADHitsDF %>% distinct(ID, .keep_all = TRUE)
+
+#turning the dataframe into a DNABin object by splitting the sequences so each nucleotide is its own string
+CADHits <- sapply(CADHitsDF$Seq, strsplit, split="")
+
+#then converting to a DNABin object
+CADHits <- as.DNAbin(CADHits)
+
+#Using Multiple Sequence Comparison by Log-Expectation (MUSCLE) to align the Canis lupus DRD4 sequence with the top blast searches
+CAD_align <- muscle(CADHits)
+
+checkAlignment(CAD_align, what = 1)
+```
+### CADPS2 Visualization
+```{r}
+CAD_DM <- dist.dna(CAD_align, model = "K80")
+
+CAD_DMmat<-as.matrix(CAD_DM)
+
+CAD_Tree <- njs(CAD_DM)
+
+ggtree(CAD_Tree, layout = "rectangular")+
+  geom_tiplab()
+```
+TH is on Canis lupus familiaris chromosome 18 bp 47,006,609-47,014,412. This had a strong correaltion with agitation in this study.
+
+DRD4 is on Canis lupus familiaris chromosome 18 - bp 26,314,100-26,316,803. Certain polymorphisms in this genes have been found to be associated with impulsivity and inattention.
+
+OXTR is on Canis lupus familiaris chromosome 20 (NC_051824.1) - bp 9388927-9412408
 
 ## DRD4 Alignment
 ```{r}
@@ -29,17 +76,18 @@ DRD4_LabGBk <- readGenBank(DRD4_Lab)
 BLASTSearch_DRD4 <- blastSequences(paste(DRD4_LabGBk@sequence), as = 'data.frame', hitListSize = 20, timeout = 600)
 
 #making a simple dataframe with just ID numbers and sequences
-DRD4HitsDF <- data.frame(ID=BLASTSearch_DRD4$Hit_accession, Seq=BLASTSearch_DRD4$Hsp_hseq, stringsAsFactors = FALSE)
-head(DRD4HitsDF)
+DRD4HitsDF <- data.frame(ID=BLASTSearch_DRD4$Hit_def, Seq=BLASTSearch_DRD4$Hsp_hseq, stringsAsFactors = FALSE)
 
-#Adding the query sequence to the dataframe
-query_row <- c("query", paste(DRD4_LabGBk@sequence))
-DRD4HitsDF <- rbind(DRD4HitsDF, query_row)
+#changing ID to just species name with regular expressions
+DRD4HitsDF$ID <- gsub("PREDICTED: (.+) dopamine.+", "\\1", DRD4HitsDF$ID)
+DRD4HitsDF$ID <- gsub("(.+)dopamine.+", "\\1", DRD4HitsDF$ID)
+
+#making sure theres no replicate hits from the same species
+DRD4HitsDF <- DRD4HitsDF %>% distinct(ID, .keep_all = TRUE)
 
 #turning the dataframe into a DNABin object by splitting the sequences so each nucleotide is its own string
 DRD4Hits <- sapply(DRD4HitsDF$Seq, strsplit, split="")
-#adding an index number
-names(DRD4Hits) <- paste(1:nrow(DRD4HitsDF), DRD4HitsDF$ID, sep="_")
+
 #then converting to a DNABin object
 DRD4Hits <- as.DNAbin(DRD4Hits)
 
@@ -50,35 +98,39 @@ checkAlignment(DRD4_align, what = 1)
 ```
 ### DRD4 Visualization
 ```{r}
-DRD4_DM <- dist.dna(DRD4_align, model="K80")
+DRD4_DM <- dist.dna(DRD4_align, model = "K80")
 
-DRD4_DMmat<-as.matrix(DRD4_DM)
+DRD4_DMmat<-as.matrix(TH_DM)
 
-PDat <- melt(DRD4_DMmat)
+DRD4_Tree <- njs(DRD4_DM)
 
-ggplot(data = PDat, aes(x=Var1, y=Var2, fill=value)) + 
-  geom_tile()
+ggtree(DRD4_Tree, layout = "rectangular")+
+  geom_tiplab()
 ```
 
 ## TH Alignment
 ```{r}
-TH_Lab <- GBAccession("NM_001002966.1")
+THLab <- GBAccession("AB097058.1")
 
-TH_LabGBk <- readGenBank(TH_Lab)
+THLabGBk <- readGenBank(THLab)
 
-BLASTSearch_TH <- blastSequences(paste(TH_LabGBk@sequence), as = 'data.frame', hitListSize = 20, timeout = 600)
+BLASTSearch_TH <- blastSequences(paste(THLabGBk@sequence), as = 'data.frame', hitListSize = 40, timeout = 600)
+
+names(BLASTSearch_TH)
 
 #making a simple dataframe with just ID numbers and sequences
-THHitsDF <- data.frame(ID=BLASTSearch_TH$Hit_accession, Seq=BLASTSearch_TH$Hsp_hseq, stringsAsFactors = FALSE)
+THHitsDF <- data.frame(ID=BLASTSearch_TH$Hit_def, Seq=BLASTSearch_TH$Hsp_hseq, stringsAsFactors = FALSE)
 
-#Adding the query sequence to the dataframe
-query_row <- c("query", paste(TH_LabGBk@sequence))
-THHitsDF <- rbind(THHitsDF, query_row)
+#changing ID to just species name with regular expressions
+THHitsDF$ID <- gsub("PREDICTED: (.+) tyrosine.+", "\\1", THHitsDF$ID)
+THHitsDF$ID[1] <- "Canis lupus familiaris"
+
+#making sure theres no replicate hits from the same species
+THHitsDF <- THHitsDF %>% distinct(ID, .keep_all = TRUE)
 
 #turning the dataframe into a DNABin object by splitting the sequences so each nucleotide is its own string
 THHits <- sapply(THHitsDF$Seq, strsplit, split="")
-#adding an index number
-names(THHits) <- paste(1:nrow(THHitsDF), THHitsDF$ID, sep="_")
+
 #then converting to a DNABin object
 THHits <- as.DNAbin(THHits)
 
@@ -87,64 +139,15 @@ TH_align <- muscle(THHits)
 
 checkAlignment(TH_align, what = 1)
 ```
-
-## OXTR Alignment
+### TH Visualization
 ```{r}
-OXTR_Lab <- GBAccession("NM_001198659.1")
-  
-OXTR_LabGBk <- readGenBank(OXTR_Lab)
+TH_DM <- dist(TH_align)
 
-BLASTSearch_OXTR <- blastSequences(paste(OXTR_LabGBk@sequence), as = 'data.frame', hitListSize = 20, timeout = 600)
+TH_DMmat<-as.matrix(TH_DM)
 
-#making a simple dataframe with just ID numbers and sequences
-OXTRHitsDF <- data.frame(ID=BLASTSearch_OXTR$Hit_accession, Seq=BLASTSearch_OXTR$Hsp_hseq, stringsAsFactors = FALSE)
+TH_Tree <- njs(TH_DM)
 
-#Adding the query sequence to the dataframe
-query_row <- c("query", paste(OXTR_LabGBk@sequence))
-OXTRHitsDF <- rbind(OXTRHitsDF, query_row)
-
-#turning the dataframe into a DNABin object by splitting the sequences so each nucleotide is its own string
-OXTRHits <- sapply(OXTRHitsDF$Seq, strsplit, split="")
-#adding an index number
-names(OXTRHits) <- paste(1:nrow(OXTRHitsDF), OXTRHitsDF$ID, sep="_")
-#then converting to a DNABin object
-OXTRHits <- as.DNAbin(OXTRHits)
-
-#Using Multiple Sequence Comparison by Log-Expectation (MUSCLE) to align the Canis lupus DRD4 sequence with the top blast searches
-OXTR_align <- muscle(OXTRHits)
-
-checkAlignment(OXTR_align, what = 1)
+ggtree(TH_Tree)+
+  geom_tiplab()
 ```
-
-## SLC6A Alignment
-```{r}
-SLC6A_Lab <- GBAccession("XM_038426923.1")
-
-SLC6A_LabGBk <- readGenBank(SLC6A_Lab)
-
-BLASTSearch_SLC6A <- blastSequences(paste(SLC6a_LabGBk@sequence), as = 'data.frame', hitListSize = 20, timeout = 600)
-
-#making a simple dataframe with just ID numbers and sequences
-SLC6AHitsDF <- data.frame(ID=BLASTSearch_SLC6A$Hit_accession, Seq=BLASTSearch_SLC6A$Hsp_hseq, stringsAsFactors = FALSE)
-
-#Adding the query sequence to the dataframe
-query_row <- c("query", paste(SLC6A_LabGBk@sequence))
-SLC6AHitsDF <- rbind(SLC6AHitsDF, query_row)
-
-#turning the dataframe into a DNABin object by splitting the sequences so each nucleotide is its own string
-SLC6AHits <- sapply(SLC6AHitsDF$Seq, strsplit, split="")
-#adding an index number
-names(SLC6AHits) <- paste(1:nrow(SLC6AHitsDF), SLC6AHitsDF$ID, sep="_")
-#then converting to a DNABin object
-SLC6AHits <- as.DNAbin(SLC6AHits)
-
-#Using Multiple Sequence Comparison by Log-Expectation (MUSCLE) to align the Canis lupus DRD4 sequence with the top blast searches
-SLC6A_align <- muscle(SLC6AHits)
-
-checkAlignment(SLC6A_align, what = 1)
-```
-
-
-
-
 
