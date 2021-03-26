@@ -1,11 +1,3 @@
----
-title: "Genetic_Behaviour_Correlations"
-author: "Alex Tsiofas"
-date: "12/03/2021"
-output: html_document
----
-
-```{r warning = F, message=F}
 library(BiocManager)
 library(dplyr)
 library(genbankr)
@@ -15,17 +7,15 @@ library(ape)
 library(reshape2)
 library(ggplot2)
 library(ggtree)
-```
 
-The results of this study were consistent with those of Flint (2003) and Willis-Owen and Flint (2006) suggestings that many of the traits of interest were polygenic. However some strong associations of specific genes with traits were still uncovered. 
 
-One of the largest effect sizes was found with SNP CFA20 which was located very close to CADPS2- SNPs in this region were found to be correlated with the NoiseFear trait. Let's generate an alignment and tree with species that have similar sequences to the Canis lupus familiaris CFA20 gene
-## CADPS2 Alignment
-```{r}
+##CADPS2 Alignment
+#pulling CADPS2 sequence from genbank
 CAD_Lab <- GBAccession("XM_038687133.1")
-  
+#reading the genbank object
 CAD_LabGBk <- readGenBank(CAD_Lab)
 
+#blast searching the CADPS2 sequence
 BLASTSearch_CAD <- blastSequences(paste(CAD_LabGBk@sequence), as = 'data.frame', hitListSize = 40, timeout = 600)
 
 #making a simple dataframe with just ID numbers and sequences
@@ -41,33 +31,38 @@ CADHitsDF <- CADHitsDF %>% distinct(ID, .keep_all = TRUE)
 #turning the dataframe into a DNABin object by splitting the sequences so each nucleotide is its own string
 CADHits <- sapply(CADHitsDF$Seq, strsplit, split="")
 
+#adding species as the name
+names(CADHits) <- CADHitsDF$ID
+
 #then converting to a DNABin object
 CADHits <- as.DNAbin(CADHits)
 
 #Using Multiple Sequence Comparison by Log-Expectation (MUSCLE) to align the Canis lupus DRD4 sequence with the top blast searches
 CAD_align <- muscle(CADHits)
 
-checkAlignment(CAD_align, what = 1)
-```
-### CADPS2 Visualization
-```{r}
+#generating a distance matrix from the alignment
 CAD_DM <- dist.dna(CAD_align, model = "K80")
 
-CAD_DMmat<-as.matrix(CAD_DM)
-
+#making a neighbour joining tree from the distance matrix
 CAD_Tree <- njs(CAD_DM)
 
-ggtree(CAD_Tree, layout = "rectangular")+
+#visualizing the tree
+CAD_treeim <- ggtree(CAD_Tree, layout = "rectangular")+
   geom_tiplab()
-```
-TH is on Canis lupus familiaris chromosome 18 bp 47,006,609-47,014,412. This had a strong correaltion with agitation in this study.
 
-DRD4 is on Canis lupus familiaris chromosome 18 - bp 26,314,100-26,316,803. Certain polymorphisms in this genes have been found to be associated with impulsivity and inattention.
+#exporting the tree as a pdf
+ggsave(filename = "CADtree.pdf", CAD_treeim, device = "pdf", width = 20, height = 4, units = "in" , limitsize = FALSE)
 
-OXTR is on Canis lupus familiaris chromosome 20 (NC_051824.1) - bp 9388927-9412408
+#creating a tree with no branch lengths
+CAD_nodist <- ggtree(CAD_Tree, layout = "rectangular", branch.length = "none")+
+  geom_tiplab()+
+  xlim(NA, 24)
 
-## DRD4 Alignment
-```{r}
+#exporting the no branch length tree as a pdf
+ggsave(filename = "CADtree_nodist.pdf", CAD_nodist, device = "pdf", width = 5, height = 4, units = "in" , limitsize = FALSE)
+
+##DRD4 Alignment
+
 #Pulling DRD4 Sequence from GenBank and reading it
 DRD4_Lab <- GBAccession("XM_038424041.1")
 DRD4_LabGBk <- readGenBank(DRD4_Lab)
@@ -88,37 +83,48 @@ DRD4HitsDF <- DRD4HitsDF %>% distinct(ID, .keep_all = TRUE)
 #turning the dataframe into a DNABin object by splitting the sequences so each nucleotide is its own string
 DRD4Hits <- sapply(DRD4HitsDF$Seq, strsplit, split="")
 
+#adding species as the name
+names(DRD4Hits) <- DRD4HitsDF$ID
+
 #then converting to a DNABin object
 DRD4Hits <- as.DNAbin(DRD4Hits)
 
 #Using Multiple Sequence Comparison by Log-Expectation (MUSCLE) to align the Canis lupus DRD4 sequence with the top blast searches
 DRD4_align <- muscle(DRD4Hits)
 
-checkAlignment(DRD4_align, what = 1)
-```
-### DRD4 Visualization
-```{r}
+#using the alignment to create a DNA distance matrix
 DRD4_DM <- dist.dna(DRD4_align, model = "K80")
 
-DRD4_DMmat<-as.matrix(TH_DM)
-
+#using the distance matrix to create a neighbour joining tree
 DRD4_Tree <- njs(DRD4_DM)
 
-ggtree(DRD4_Tree, layout = "rectangular")+
+#generating the tree image as an object
+Dr_treeim <- ggtree(DRD4_Tree, layout = "rectangular")+
   geom_tiplab()
-```
 
-## TH Alignment
-```{r}
+#exporting the tree image as a pdf
+ggsave(filename = "DRD4tree.pdf", Dr_treeim, device = "pdf", width = 20, height = 4, units = "in" , limitsize = FALSE)
+
+#generating a tree that doesnt make the branch lengths a factor
+DR_nodist <- ggtree(DRD4_Tree, branch.length = "none")+
+  geom_tiplab()+
+  xlim(NA, 24)
+
+#exporting the tree without distance
+ggsave(filename = "DRD4tree_nodist.pdf", DR_nodist, device = "pdf", width = 8, height = 4, units = "in" , limitsize = FALSE)
+
+##TH Alignment
+
+#Pulling TH Sequence from GenBank
 THLab <- GBAccession("AB097058.1")
 
+#reading the genbank object
 THLabGBk <- readGenBank(THLab)
 
+#running a blast search with the TH sequence
 BLASTSearch_TH <- blastSequences(paste(THLabGBk@sequence), as = 'data.frame', hitListSize = 40, timeout = 600)
 
-names(BLASTSearch_TH)
-
-#making a simple dataframe with just ID numbers and sequences
+#making a simple dataframe with just ID names and sequences
 THHitsDF <- data.frame(ID=BLASTSearch_TH$Hit_def, Seq=BLASTSearch_TH$Hsp_hseq, stringsAsFactors = FALSE)
 
 #changing ID to just species name with regular expressions
@@ -131,23 +137,30 @@ THHitsDF <- THHitsDF %>% distinct(ID, .keep_all = TRUE)
 #turning the dataframe into a DNABin object by splitting the sequences so each nucleotide is its own string
 THHits <- sapply(THHitsDF$Seq, strsplit, split="")
 
+#adding species as the name
+names(THHits) <- THHitsDF$ID
+
 #then converting to a DNABin object
 THHits <- as.DNAbin(THHits)
 
 #Using Multiple Sequence Comparison by Log-Expectation (MUSCLE) to align the Canis lupus DRD4 sequence with the top blast searches
 TH_align <- muscle(THHits)
 
-checkAlignment(TH_align, what = 1)
-```
-### TH Visualization
-```{r}
-TH_DM <- dist(TH_align)
+#making a distance matrix based on the alignment
+TH_DM <- dist.dna(TH_align)
 
-TH_DMmat<-as.matrix(TH_DM)
-
+#making a neighbour joining tree based on distance matrix
 TH_Tree <- njs(TH_DM)
 
-ggtree(TH_Tree)+
+#visualizing the tree
+TH_treeim <- ggtree(TH_Tree)+
   geom_tiplab()
-```
+#saving the tree image
+ggsave(filename = "THtree.pdf", TH_treeim, device = "pdf", width = 20, height = 4, units = "in" , limitsize = FALSE)
 
+#creating a tree without branch dists
+TH_nodist <- ggtree(TH_Tree, branch.length = "none")+
+  geom_tiplab()+
+  xlim(NA, 24)
+#saving no branch dist tree
+ggsave(filename = "THtree_nodist.pdf", TH_nodist, device = "pdf", width = 8, height = 4, units = "in" , limitsize = FALSE)
