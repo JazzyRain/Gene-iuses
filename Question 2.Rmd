@@ -1,0 +1,87 @@
+---
+title: "Question 2"
+author: "Jordan Rutherford"
+date: "12/03/2021"
+output: html_document
+---
+
+### Introduction
+
+This script will evaluate the influence of age on the expression of different personality traits in Labrador Retrievers. Age is measured in days.
+
+```{r}
+traits_dat <- read.csv("traits.csv") #loading in my data
+```
+
+```{r}
+#library load
+library(ggplot2)
+library(cowplot)
+```
+
+
+### Creating graphs to evaluate the distribution of age across each behavioural trait:
+
+```{r fig.height = 8, warning = FALSE}
+#this loop creates a scatter plot for each behavioural trait vs age
+for (i in 1:length(traits_dat)) {
+  plot <- ggplot(data = traits_dat,
+                 aes_string(x = "Age", y = names(traits_dat[i]))) + #plot age on x and behavioural traits on y
+    geom_point(alpha = 0.1) + #reduce opacity to visualize areas of high density
+    theme_classic()
+  
+  #assign names of plots based on trait names to an object
+  assign(x = paste0(names(traits_dat)[i], "_plot"), plot)
+}
+
+#view these generated plots in a grid
+plot_grid(Agitated_plot, AttenSeek_plot, Bark_plot, Excite_plot, Fetch_plot, HO_Fear_plot, NO_Agg_plot, NoiseF_plot, O_Agg_plot, SepAnx_plot, Train_plot, UnBeh_plot, ncol = 3)
+```
+
+
+### Analyzing the data
+
+We will be determining whether age has a significant effect on the expression of each of the behavioural traits in question using a one-way ANOVA for each group. 
+
+```{r, warning = FALSE}
+#create subset of the behaviours we are analyzing
+behaviours <- names(traits_dat)[8:19]
+
+#create a blank data frame to hold the data for the ANOVA tests
+age_anovas <- data.frame(matrix(nrow = 12, ncol = 3))
+names(age_anovas) <- c("Behavioural_Trait", "F_value", "P_value")
+
+#loop to iterate through each trait and evaluate the influence of age
+for (i in 1:length(behaviours)) {
+  #create object of behaviours ~ Age to plug into ANOVA
+  lms <- paste(behaviours[i], "~ Age")
+  #perform ANOVA tests using lms object
+  analyses <- aov(as.formula(lms), data = traits_dat)
+  #store this data in the blank matrix
+  #store behaviour names
+  age_anovas$Behavioural_Trait[i] <- behaviours[i]
+  #store F values
+  age_anovas$F_value[i] <- summary(analyses)[[1]][["F value"]]
+  #store p values
+  age_anovas$P_value[i] <- summary(analyses)[[1]][["Pr(>F)"]]
+}
+
+#print ANOVA results
+print(age_anovas)
+```
+
+
+### Graphing the ANOVA results
+
+```{r}
+#graph p values for influence of age vs behavioural traits
+ggplot(age_anovas, aes(x = Behavioural_Trait, y = P_value)) +
+  geom_bar(stat = "identity") +
+  theme_classic() +
+  geom_hline(yintercept = 0.05, colour = "red") #add line at p = 0.05 to show significant values
+```
+
+
+
+
+
