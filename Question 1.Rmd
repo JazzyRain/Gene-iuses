@@ -1,0 +1,69 @@
+---
+title: "sex_neuter_analysis"
+author: "Alex Tsiofas"
+date: "11/03/2021"
+output: html_document
+---
+## Intro
+This script will visualize and determine if any of the
+Neutering categories - Male entire (n = 451), male neutered
+(n = 59), female entire (n = 1028), female neutered (n = 426)- 
+are significantly different from the others in any of the 
+behavioural traits
+
+## Loading Libraries and Importing the Traits csv file from Git
+```{r warning = F, message=F}
+library(ggplot2)
+library(dplyr)
+library(cowplot)
+
+traits_dat <- read.csv("traits.csv")
+
+traits_dat$Gender_status <- as.factor(traits_dat$Gender_status)
+```
+
+## Plotting the Data
+```{r fig.height= 8, fig.width = 8, warning=F}
+#loop that creates a boxplot for each of the traits in the list, 
+#plotted against gender/neutering status
+for (i in 8:19){
+  #plot with gender status on x and each trait on y
+  plot1 <- ggplot(data = subset(traits_dat, !is.na(Gender_status)), 
+                  aes_string(x = "Gender_status", y = names(traits_dat[i])))+
+    geom_boxplot()+
+    scale_x_discrete(labels = c("Male Entire", "Male Neutered", 
+                                "Female Entire", "Female Neutered"))+
+    theme_classic()
+  #assigning the plot to an object with the behavioural trait name
+  assign(x = paste0(names(traits_dat)[i], "_plot"), plot1)
+}
+
+plot_grid(Agitated_plot, AttenSeek_plot, Bark_plot, Excite_plot, Fetch_plot, HO_Fear_plot, NO_Agg_plot,
+          NoiseF_plot, O_Agg_plot, SepAnx_plot, Train_plot, UnBeh_plot,
+          ncol = 3)
+```
+
+## Analysis
+Within each behaviour we are comparing whether the mean ranking of the behaviour significantly differs between  the gender/neuter status groups. We use an ANOVA to compare these group means
+```{r warning = F}
+#making a list of the behaviour column names
+behaviours1 <- names(traits_dat)[8:19]
+
+#initiating a data frame to hold the anova statistics
+sexneuter_anovas <- data.frame(matrix(nrow = 12, ncol = 3))
+names(sexneuter_anovas) <- c("Behaviour", "F_Statistic", "P_Value")
+
+for (i in 1:length(behaviours1)){
+  #looking at how gender status impacts each behaviour
+  rel1 <- paste(behaviours1[i], '~ Gender_status')
+  #running the anova with the specified function
+  analysis1 <- aov(as.formula(rel1), data = traits_dat)
+  #assigning the analysis results to an appropriate variable name
+  sexneuter_anovas$Behaviour[i] <- behaviours1[i]
+  sexneuter_anovas$F_Statistic[i] <- summary(analysis1)[[1]][["F value"]]
+  sexneuter_anovas$P_Value[i] <- summary(analysis1)[[1]][["Pr(>F)"]]
+}
+
+print(sexneuter_anovas)
+```
+

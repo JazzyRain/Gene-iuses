@@ -1,0 +1,224 @@
+---
+title: "Question 3"
+output: html_document
+---
+
+To begin, we will import our dataset and all of the packages that will be used for this question. 
+```{r}
+library(tidyverse) #loading tidyverse 
+library(cowplot) #loading cowplot
+ 
+dat <- read.csv("./traits.csv") #loading our data 
+summary(dat)
+```
+Next, we will select the columns that are going to be used to analyze our biological question. 
+```{r}
+dat <- dat %>% select(Coat_colour, Gender_status, Health, Agitated, NO_Agg, Train, AttenSeek)
+summary(dat) #selecting our data columns 
+str(dat) #checking the structure of our data 
+dat$Coat_colour <- as.factor(dat$Coat_colour) #changing coat colour to a factor
+dat$Gender_status <- as.factor(dat$Gender_status) #changing gender status to a factor
+dat$Health <- as.factor(dat$Health) #changing health status to a factor 
+```
+First, we will visualize the data utilizing boxplots. Let's take a look at the effect of coat colour on predictor variables. 
+```{r fig.height=10, fig.width=12}
+#adding a theme to make our plots look publication worthy
+mytheme <- theme(
+  axis.ticks = element_line(size=1, colour="black"),
+  axis.text.x = element_text(size=16, colour="black"),
+  axis.text.y = element_text(size=16,, colour="black"),
+  axis.title.x = element_text(size=20, colour="black", vjust=0.5),
+  axis.title.y = element_text(size=20, colour="black", vjust=+2),
+  panel.background = element_rect(fill="white", colour="black"),
+  panel.border = element_blank(),
+  panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank()
+)
+
+#Coat Colour plots against our predictor variables 
+CAgg <- ggplot(data = dat) +
+  geom_boxplot(aes(x = Coat_colour, y = Agitated, fill = Coat_colour)) +
+  xlab("Coat Colour") +
+  ylab("Aggitated") +
+  theme(legend.position = "none") +
+  scale_y_continuous(limits = c(1,5), breaks = seq(1,5,1)) +
+  scale_x_discrete(labels = c("Black","Yellow","Chocolate")) +
+  mytheme
+
+CNO <- ggplot(data = dat) +
+  geom_boxplot(aes(x = Coat_colour, y = NO_Agg, fill = Coat_colour)) +
+  xlab("Coat Colour") + 
+  ylab("Non-owner Directed Agression") +
+  theme(legend.position = "none") +
+  scale_y_continuous(limits = c(1,5), breaks = seq(1,5,1)) +
+  scale_x_discrete(labels = c("Black","Yellow","Chocolate")) +
+  mytheme
+
+CT <- ggplot(data = dat) +
+  geom_boxplot(aes(x = Coat_colour, y = Train, fill = Coat_colour)) +
+  xlab("Coat Colour") +
+  ylab("Trainability") +
+  theme(legend.position = "none") +
+  scale_y_continuous(limits = c(1,5), breaks = seq(1,5,1)) +
+  scale_x_discrete(labels = c("Black","Yellow","Chocolate")) +
+  mytheme
+
+CAtt <- ggplot(data = dat) +
+  geom_boxplot(aes(x = Coat_colour, y = AttenSeek, fill = Coat_colour)) +
+  xlab("Coat Colour") +
+  ylab("Attention Seeking") +
+  theme(legend.position = "none") +
+  scale_y_continuous(limits = c(1,5), breaks = seq(1,5,1)) +
+  scale_x_discrete(labels = c("Black","Yellow","Chocolate")) +
+  mytheme
+
+pdf(file = "./Question_3_Figures/Coat_Colour.pdf", height = 10, width = 10)
+(CColour <- plot_grid(CAgg, CNO, CT, CAtt, labels = "AUTO")) #creating a 4 plot graph
+dev.off()
+```
+Next, lets take a look at the effect of gender status on predictor variables. 
+```{r fig.height=10, fig.width=20}
+#Gender status plots against our predictor variables 
+GAgg <- ggplot(data = dat) +
+  geom_boxplot(aes(x = Gender_status, y = Agitated, fill = Gender_status)) +
+  xlab("Gender Status") +
+  ylab("Aggitated") +
+  theme(legend.position = "none") +
+  scale_y_continuous(limits = c(1,5), breaks = seq(1,5,1)) +
+  scale_x_discrete(labels = c("Male Entire","Male Neutered",
+          "Female Entire", "Female Neutered", "Missing")) +
+  mytheme
+
+GNO <- ggplot(data = dat) +
+  geom_boxplot(aes(x = Gender_status, y = NO_Agg, fill = Gender_status)) +
+  xlab("Gender Status") + 
+  ylab("Non-owner Directed Agression") +
+  theme(legend.position = "none") +
+  scale_y_continuous(limits = c(1,5), breaks = seq(1,5,1)) +
+  scale_x_discrete(labels = c("Male Entire","Male Neutered",
+          "Female Entire", "Female Neutered", "Missing")) +
+  mytheme
+
+GT <- ggplot(data = dat) +
+  geom_boxplot(aes(x = Gender_status, y = Train, fill = Gender_status)) +
+  xlab("Gender Status") +
+  ylab("Trainability") +
+  theme(legend.position = "none") +
+  scale_y_continuous(limits = c(1,5), breaks = seq(1,5,1)) +
+  scale_x_discrete(labels = c("Male Entire","Male Neutered",
+          "Female Entire", "Female Neutered", "Missing")) +
+  mytheme
+
+GAtt <- ggplot(data = dat) +
+  geom_boxplot(aes(x = Gender_status, y = AttenSeek, fill = Gender_status)) +
+  xlab("Gender Status") +
+  ylab("Attention Seeking") +
+  theme(legend.position = "none") +
+  scale_y_continuous(limits = c(1,5), breaks = seq(1,5,1)) +
+  scale_x_discrete(labels = c("Male Entire","Male Neutered",
+          "Female Entire", "Female Neutered", "Missing")) +
+  mytheme
+
+pdf(file = "./Question_3_Figures/Gender_Status.pdf", height = 10, width = 20)
+(GStatus <- plot_grid(GAgg, GNO, GT, GAtt, labels = "AUTO")) #creating a 4 plot graph
+dev.off()
+```
+Finally, we will look at the effect of health on predictor variables
+```{r fig.height=10, fig.width=12}
+#Health Status plots against our predictor variables 
+HAgg <- ggplot(data = dat) +
+  geom_boxplot(aes(x = Health, y = Agitated, fill = Health)) +
+  xlab("Health") +
+  ylab("Aggitated") +
+  theme(legend.position = "none") +
+  scale_y_continuous(limits = c(1,5), breaks = seq(1,5,1)) +
+  scale_x_discrete(labels = c("Health Problems", "No Health Problems")) +
+  mytheme
+
+HNO <- ggplot(data = dat) +
+  geom_boxplot(aes(x = Health, y = NO_Agg, fill = Health)) +
+  xlab("Health") + 
+  ylab("Non-owner Directed Agression") +
+  theme(legend.position = "none") +
+  scale_y_continuous(limits = c(1,5), breaks = seq(1,5,1)) +
+  scale_x_discrete(labels = c("Health Problems", "No Health Problems")) +
+  mytheme
+
+HT <- ggplot(data = dat) +
+  geom_boxplot(aes(x = Health, y = Train, fill = Health)) +
+  xlab("Health") +
+  ylab("Trainability") +
+  theme(legend.position = "none") +
+  scale_y_continuous(limits = c(1,5), breaks = seq(1,5,1)) +
+  scale_x_discrete(labels = c("Health Problems", "No Health Problems")) +
+  mytheme
+
+HAtt <- ggplot(data = dat) +
+  geom_boxplot(aes(x = Health, y = AttenSeek, fill = Health)) +
+  xlab("Health") +
+  ylab("Attention Seeking") +
+  theme(legend.position = "none") +
+  scale_y_continuous(limits = c(1,5), breaks = seq(1,5,1)) +
+  scale_x_discrete(labels = c("Health Problems", "No Health Problems")) +
+  mytheme
+
+pdf(file = "./Question_3_Figures/Health_Status.pdf", height = 10, width = 10)
+(HStatus <- plot_grid(HAgg, HNO, HT, HAtt, labels = "AUTO")) #creating a 4 plot graph 
+dev.off()
+```
+As all of our non-predictor variables (coat colour, gender status, and health) are categorical and our predictor variables are numeric (agitated, non-owner directed agression, trainanbility, and attention seeking) we are going to create a loop that performs ANOVA tests for each combination of predictor and non predictor variables. 
+```{r}
+npred <- names(dat)[1:3] #creating a vector of column names 
+
+#Agitated vectors for results and TukeyHSD
+resultsAgitated <- rep(NA, length(npred))
+TukeyAgitated <- rep(NA, length(npred))
+
+#Agression vectors for results and TukeyHSD
+resultsAgg <- rep(NA, length(npred))
+TukeyAgg <- rep(NA, length(npred))
+
+#Trainability vectors for results and TukeyHSD
+resultsTrain <- rep(NA, length(npred))
+TukeyTrain <- rep(NA, length(npred))
+
+#Attention Seeking vectors for results and TukeyHSD
+resultsAtt <- rep(NA, length(npred))
+TukeyAtt <- rep(NA, length(npred))
+
+
+
+for(i in 1:length(npred)){
+  myformulaAgitated <- paste('Agitated~', npred[i]) #creating a formula for our anova test 
+  modAgitated <- aov(as.formula(myformulaAgitated), data = dat) #applying our anova test 
+  resultsAgitated[i] <- summary(aov(modAgitated)) #outputting our results 
+  TukeyAgitated[i] <- TukeyHSD(modAgitated) #outputting TukeyHSD 
+  
+  myformulaAgg <- paste('NO_Agg~', npred[i]) #creating a formula for our anova test
+  modAgg <- aov(as.formula(myformulaAgg), data = dat) #applying our anova test
+  resultsAgg[i] <- summary(aov(modAgg)) #outputting our results 
+  TukeyAgg[i] <- TukeyHSD(modAgg) #outputting TukeyHSD
+
+  
+  myformulaTrain <- paste('Train~', npred[i]) #creating a formula for our anova test
+  modTrain <- aov(as.formula(myformulaTrain), data = dat) #applying our anova test 
+  resultsTrain[i] <- summary(aov(modTrain)) #outputting results 
+  TukeyTrain[i] <- TukeyHSD(modTrain) #outputting TukeyHSD
+  
+  myformulaAtt <- paste('AttenSeek~', npred[i]) #creating a formula for our anova test 
+  modAtt <- aov(as.formula(myformulaAtt), data = dat) #applying our anova test 
+  resultsAtt[i] <- summary(aov(modAtt)) #outputting results 
+  TukeyAtt[i] <- TukeyHSD(modAtt) #outputting TukeyHSD
+}
+
+print(resultsAgitated)
+print(TukeyAgitated)
+print(resultsAgg)
+print(TukeyAgg)
+print(resultsTrain)
+print(TukeyTrain)
+print(resultsAtt)
+print(TukeyAtt)
+```
+
+
