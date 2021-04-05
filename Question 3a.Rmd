@@ -11,7 +11,7 @@ This R markdown file that investigates the phylogeneticrelationship of canis lup
 ##load library setup 
 library(BiocManager)
 library(dplyr)
-library(genbankr)
+library(genbankr) 
 library(rentrez)
 library(annotate)
 library(ape)
@@ -65,8 +65,9 @@ COXDMmat<-as.matrix(COXDM)##generate matrix
 ### Visualization with ggtree
 ```{r}
 COXTree<-njs(COXDM) #neighbour joining 
-COX1Tree<-ggtree(COXTree, layout="rectangular", size=0.002)+geom_tiplab() #generate the phylogenetic tree using ggtree(), arranged in rectangular form with tip labels 
+COX1Tree<-ggtree(COXTree, layout="rectangular", size=0.02)+geom_tiplab()+ xlim(0, 0.2)  #generate the phylogenetic tree using ggtree(), arranged in rectangular form with tip labels 
 COX1Tree ##call out the tree
 
-ggsave(filename = "COX1 Alignment.pdf" , device = "pdf", width = 40, height = 15 , units = "in" , limitsize = FALSE)##save the tree as pdf
+
+ggsave(filename = "COX1 Alignment.pdf" , device = "pdf", width = 20, height = 12 , units = "in" , limitsize = FALSE)##save the tree as pdf
 ```
