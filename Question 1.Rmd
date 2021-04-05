@@ -20,6 +20,12 @@ library(cowplot)
 traits_dat <- read.csv("traits.csv")
 
 traits_dat$Gender_status <- as.factor(traits_dat$Gender_status)
+summary(traits_dat)
+
+levels(traits_dat$Gender_status)[levels(traits_dat$Gender_status)=="0"] <- "Male Entire"
+levels(traits_dat$Gender_status)[levels(traits_dat$Gender_status)=="1"] <- "Male Neutered"
+levels(traits_dat$Gender_status)[levels(traits_dat$Gender_status)=="2"] <- "Female Entire"
+levels(traits_dat$Gender_status)[levels(traits_dat$Gender_status)=="3"] <- "Female Neutered"
 ```
 
 ## Plotting the Data
@@ -33,6 +39,7 @@ for (i in 8:19){
     geom_boxplot()+
     scale_x_discrete(labels = c("Male Entire", "Male Neutered", 
                                 "Female Entire", "Female Neutered"))+
+    scale_y_continuous(limits = c(1,5), breaks = c(2, 3, 4, 5))+
     theme_classic()
   #assigning the plot to an object with the behavioural trait name
   assign(x = paste0(names(traits_dat)[i], "_plot"), plot1)
@@ -42,9 +49,12 @@ plot_grid(Agitated_plot, AttenSeek_plot, Bark_plot, Excite_plot, Fetch_plot, HO_
           NoiseF_plot, O_Agg_plot, SepAnx_plot, Train_plot, UnBeh_plot,
           ncol = 3)
 ```
+Visually there doesn't appear to be any obvious patterns between gender status and any of the different behavioural rankings. In every plot, the mean behaviour ranking of all gender categories lines up. These plots can also be useful in visualizing the averages among the sampled dog as a whole. For example, across the entire O_Agg plot (owner directed aggression) there is an incredibly low mean save for a few outliers. Even Non-owner directed aggression has relatively low means - these observation indicate that the breed as a whole is not entirely aggressive and may be indicative of a genetic trait that is similar across the species as a whole. Similarly, fetching, trainability, and Attention seeking behaviours all seem to be quite high in all categories on average, again indicating possible breed-wide traits that are independent of environmental factors, gender, and neutering status.
+
+Next we will investigate if there are any significant differences between gender status groups within each behaviour. Although they all visually look similar, the high number of observations in each category gives high statistical power and even slight differences in true popualtion means are capable of being detected.
 
 ## Analysis
-Within each behaviour we are comparing whether the mean ranking of the behaviour significantly differs between  the gender/neuter status groups. We use an ANOVA to compare these group means
+Within each behaviour we are comparing whether the mean ranking of the behaviour significantly differs between the gender/neuter status groups. We use an ANOVA to compare these group means to see if there is a difference anywhere within each behaviour
 ```{r warning = F}
 #making a list of the behaviour column names
 behaviours1 <- names(traits_dat)[8:19]
@@ -52,6 +62,7 @@ behaviours1 <- names(traits_dat)[8:19]
 #initiating a data frame to hold the anova statistics
 sexneuter_anovas <- data.frame(matrix(nrow = 12, ncol = 3))
 names(sexneuter_anovas) <- c("Behaviour", "F_Statistic", "P_Value")
+tukeys <- data.frame
 
 for (i in 1:length(behaviours1)){
   #looking at how gender status impacts each behaviour
@@ -60,10 +71,41 @@ for (i in 1:length(behaviours1)){
   analysis1 <- aov(as.formula(rel1), data = traits_dat)
   #assigning the analysis results to an appropriate variable name
   sexneuter_anovas$Behaviour[i] <- behaviours1[i]
+  #inputting the f statistic and the p value into the appropriate row of the data frame
   sexneuter_anovas$F_Statistic[i] <- summary(analysis1)[[1]][["F value"]]
   sexneuter_anovas$P_Value[i] <- summary(analysis1)[[1]][["Pr(>F)"]]
+  #if anova p value is significant
+  if (sexneuter_anovas$P_Value[i] < 0.05) {
+    #we run a tukey HSD post hoc
+    tukey1 <- TukeyHSD(analysis1)
+    #and assign the post hoc to a new variable we can see when the loop is done
+    assign(x = paste0(behaviours1[i], "_tukey"), tukey1)
+  }
 }
 
+#visualizing the data frame
 print(sexneuter_anovas)
+```
+Significant differences (p < 0.05) were found within attention seeking, HO fear, Noise fear, non-owner directed aggression, owner directed aggression, separation anxiety, trainability and unusual behaviour. The if statement allowed tukey HSD post hocs to run
+```{r}
+AttenSeek_tukey
+```
+```{r}
+HO_Fear_tukey
+```
+```{r}
+NoiseF_tukey
+```
+```{r}
+O_Agg_tukey
+```
+```{r}
+SepAnx_tukey
+```
+```{r}
+Train_tukey
+```
+```{r}
+UnBeh_tukey
 ```
 
