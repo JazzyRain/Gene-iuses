@@ -108,4 +108,8 @@ Train_tukey
 ```{r}
 UnBeh_tukey
 ```
-
+Some interesting findings here
+- in HO fear and Noise Fear a significant difference between female neutered and female entire
+- in owner directed aggression a significant negative difference between female entire and male entire
+- in separation anxiety, a significant negative difference between female entire and male entire
+- in trainability, a significant negative difference between male neutered - male entire and female neutered - female entire (trainability is higher in both genders after neutering)

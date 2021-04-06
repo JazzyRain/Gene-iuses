@@ -1,0 +1,223 @@
+---
+title: "Genetic_Behaviour_Correlations"
+author: "Alex Tsiofas"
+date: "12/03/2021"
+output: html_document
+---
+
+```{r warning = F, message=F}
+library(BiocManager)
+library(dplyr)
+library(genbankr)
+library(rentrez)
+library(annotate)
+library(ape)
+library(reshape2)
+library(ggplot2)
+library(ggtree)
+```
+
+The results of this study were consistent with those of Flint (2003) and Willis-Owen and Flint (2006) suggestings that many of the traits of interest were polygenic. However some strong associations of specific genes with traits were still uncovered. 
+
+One of the largest effect sizes was found with SNP CFA20 which was located very close to CADPS2- SNPs in this region were found to be correlated with the NoiseFear trait. Let's generate an alignment and tree with species that have similar sequences to the Canis lupus familiaris CFA20 gene
+## CADPS2 Alignment
+```{r}
+#pulling CADPS2 sequence from genbank
+CAD_Lab <- GBAccession("XM_038687133.1")
+
+#reading the genbank object
+CAD_LabGBk <- readGenBank(CAD_Lab)
+
+#blast searching the canis lupus CADPS2 sequence
+BLASTSearch_CAD <- blastSequences(paste(CAD_LabGBk@sequence), as = 'data.frame', hitListSize = 40, timeout = 600)
+
+#making a simple dataframe with just ID numbers and sequences
+CADHitsDF <- data.frame(ID=BLASTSearch_CAD$Hit_def, Seq=BLASTSearch_CAD$Hsp_hseq, stringsAsFactors = FALSE)
+
+#changing ID to just species name with regular expressions
+CADHitsDF$ID <- gsub("PREDICTED: (.+) calcium.+", "\\1", CADHitsDF$ID)
+CADHitsDF$ID <- gsub("PREDICTED: (.+) Ca.+", "\\1", CADHitsDF$ID)
+
+#making sure theres no replicate hits from the same species
+CADHitsDF <- CADHitsDF %>% distinct(ID, .keep_all = TRUE)
+
+#turning the dataframe into a DNABin object by splitting the sequences so each nucleotide is its own string
+CADHits <- sapply(CADHitsDF$Seq, strsplit, split="")
+
+#adding species as the name
+names(CADHits) <- CADHitsDF$ID
+
+#then converting to a DNABin object
+CADHits <- as.DNAbin(CADHits)
+
+#Using Multiple Sequence Comparison by Log-Expectation (MUSCLE) to align the Canis lupus DRD4 sequence with the top blast searches
+CAD_align <- muscle(CADHits)
+
+#visualizing the alignment
+checkAlignment(CAD_align, what = 1)
+```
+### CADPS2 Visualization
+```{r fig.height=3, fig.width=7}
+#generating a distance matrix from the alignment
+CAD_DM <- dist.dna(CAD_align, model = "K80")
+
+#making a neighbour joining tree from the distance matrix
+CAD_Tree <- njs(CAD_DM)
+
+#visualizing the tree
+CAD_treeim <- ggtree(CAD_Tree, layout = "rectangular")+
+  geom_tiplab()
+CAD_treeim
+
+#exporting the tree as a pdf
+ggsave(filename = "CADtree.png", CAD_treeim, device = "png", width = 20, height = 4, units = "in" , limitsize = FALSE)
+
+#creating a tree with no branch lengths
+CAD_nodist <- ggtree(CAD_Tree, layout = "rectangular", branch.length = "none")+
+  geom_tiplab()+
+  xlim(NA, 24)
+
+#exporting the no branch length tree as a pdf
+ggsave(filename = "CADtree_nodist.png", CAD_nodist, device = "png", width = 5, height = 4, units = "in" , limitsize = FALSE)
+
+```
+Interestingly, after Canis lupus dingo, the closest animal to the domestic dog based on this tree is vulpes vulpes, the red fox. Malkemper et al. (2015) studied hearing sensitivity in red foxes and found that frequency cut offs were comparable to the domestic dog. 
+A study of CADPS2 knockouts in mice showed an increase in fear and anxiety (Sadakata et al. 2007). This gene seems to play a key role in behaviour and may also be linked to hearing in many species. Other species in this tree could be investigated for noise fear behaviours and how SNPs in this gene may impact this trait.
+
+## DRD4 Alignment
+This next alignment is of dopamine receptor D4 (DRD4). DRD4 is a dopaminergenic receptor and polymorphisms in this regions have been found to be associated with inattention in many animals, including humans where variants of this gene have been connected to Attention Deficit/Hyperactivity Disorder of ADHD (Tovo-Rodriguez et al. 2013).
+
+DRD4 and TH were both found to be associated with impulsivity and inattention. This finding is confirmed by Wan et al. (2013) in their study of Siberian Huskies.
+```{r}
+#Pulling DRD4 Sequence from GenBank and reading it
+DRD4_Lab <- GBAccession("XM_038424041.1")
+DRD4_LabGBk <- readGenBank(DRD4_Lab)
+
+#Blast search to find close sequences to Canis lupus familiaris DRD4 Sequence
+BLASTSearch_DRD4 <- blastSequences(paste(DRD4_LabGBk@sequence), as = 'data.frame', hitListSize = 20, timeout = 600)
+
+#making a simple dataframe with just ID numbers and sequences
+DRD4HitsDF <- data.frame(ID=BLASTSearch_DRD4$Hit_def, Seq=BLASTSearch_DRD4$Hsp_hseq, stringsAsFactors = FALSE)
+
+#changing ID to just species name with regular expressions
+DRD4HitsDF$ID <- gsub("PREDICTED: (.+) dopamine.+", "\\1", DRD4HitsDF$ID)
+DRD4HitsDF$ID <- gsub("(.+)dopamine.+", "\\1", DRD4HitsDF$ID)
+
+#making sure theres no replicate hits from the same species
+DRD4HitsDF <- DRD4HitsDF %>% distinct(ID, .keep_all = TRUE)
+
+#turning the dataframe into a DNABin object by splitting the sequences so each nucleotide is its own string
+DRD4Hits <- sapply(DRD4HitsDF$Seq, strsplit, split="")
+
+#adding species as the name
+names(DRD4Hits) <- DRD4HitsDF$ID
+
+#then converting to a DNABin object
+DRD4Hits <- as.DNAbin(DRD4Hits)
+
+#Using Multiple Sequence Comparison by Log-Expectation (MUSCLE) to align the Canis lupus DRD4 sequence with the top blast searches
+DRD4_align <- muscle(DRD4Hits)
+
+checkAlignment(DRD4_align, what = 1)
+```
+### DRD4 Visualization
+```{r fig.height=3, fig.width=5}
+#using the alignment to create a DNA distance matrix
+DRD4_DM <- dist.dna(DRD4_align, model = "K80")
+
+#using the distance matrix to create a neighbour joining tree
+DRD4_Tree <- njs(DRD4_DM)
+
+#generating the tree image as an object
+Dr_treeim <- ggtree(DRD4_Tree, layout = "rectangular")+
+  geom_tiplab()
+
+Dr_treeim
+
+#exporting the tree image as a png
+ggsave(filename = "DRD4tree.png", Dr_treeim, device = "png", width = 20, height = 4, units = "in" , limitsize = FALSE)
+
+#generating a tree that doesnt make the branch lengths a factor
+DR_nodist <- ggtree(DRD4_Tree, branch.length = "none")+
+  geom_tiplab()+
+  xlim(NA, 24)
+
+#exporting the tree without distance
+ggsave(filename = "DRD4tree_nodist.png", DR_nodist, device = "png", width = 8, height = 4, units = "in" , limitsize = FALSE)
+```
+This tree puts the domestic cat much closer to the dog, indicating that similarities could have been caused in the domestication process. This makes sense as non-impulsivity and good attention span would be a positive trait in domesticated animals.
+
+## TH Alignment
+The final gene investigated encodes tyrosine hydroxylase (TH). TH is an enzyme involved in the dopamine synthesis pathway and has also been associated with inattention and impulsivity. 
+```{r}
+#Pulling TH Sequence from GenBank
+THLab <- GBAccession("AB097058.1")
+
+#reading the genbank object
+THLabGBk <- readGenBank(THLab)
+
+#running a blast search with the TH sequence
+BLASTSearch_TH <- blastSequences(paste(THLabGBk@sequence), as = 'data.frame', hitListSize = 40, timeout = 600)
+
+#making a simple dataframe with just ID names and sequences
+THHitsDF <- data.frame(ID=BLASTSearch_TH$Hit_def, Seq=BLASTSearch_TH$Hsp_hseq, stringsAsFactors = FALSE)
+
+#changing ID to just species name with regular expressions
+THHitsDF$ID <- gsub("PREDICTED: (.+) tyrosine.+", "\\1", THHitsDF$ID)
+THHitsDF$ID[1] <- "Canis lupus familiaris"
+
+#making sure theres no replicate hits from the same species
+THHitsDF <- THHitsDF %>% distinct(ID, .keep_all = TRUE)
+
+#turning the dataframe into a DNABin object by splitting the sequences so each nucleotide is its own string
+THHits <- sapply(THHitsDF$Seq, strsplit, split="")
+
+#adding species as the name
+names(THHits) <- THHitsDF$ID
+
+#then converting to a DNABin object
+THHits <- as.DNAbin(THHits)
+
+#Using Multiple Sequence Comparison by Log-Expectation (MUSCLE) to align the Canis lupus DRD4 sequence with the top blast searches
+TH_align <- muscle(THHits)
+
+#visualizing the alignment
+checkAlignment(TH_align, what = 1)
+```
+### TH Tree
+```{r fig.height=3, fig.width=5}
+#making a distance matrix based on the alignment
+TH_DM <- dist.dna(TH_align)
+
+#making a neighbour joining tree based on distance matrix
+TH_Tree <- njs(TH_DM)
+
+#visualizing the tree
+TH_treeim <- ggtree(TH_Tree)+
+  geom_tiplab()
+TH_treeim
+
+#saving the tree image
+ggsave(filename = "THtree.png", TH_treeim, device = "png", width = 20, height = 4, units = "in" , limitsize = FALSE)
+
+#creating a tree without branch dists
+TH_nodist <- ggtree(TH_Tree, branch.length = "none")+
+  geom_tiplab()+
+  xlim(NA, 24)
+#saving no branch dist tree
+ggsave(filename = "THtree_nodist.png", TH_nodist, device = "png", width = 8, height = 4, units = "in" , limitsize = FALSE)
+```
+There are a lot of species deemed by having a similar sequence to the canis lupus familiaris. One possibility for this is that studies have shown that variants of this gene are often repeat variants (Ito et al. 2004; Hejjas et al. 2007). It is possible that these species contain multiple copies of the TH gene - one that is similar to the BLAST-ed sequence from canis lupus familiaris and other copies that may cause behavioural differences. 
+
+
+## Literature Cited
+
+Hejjas K., Kubinyi E., Ronai Z., Szekely A., Vas J., Miklosi A., Sasvari-Szekely M. & Kereszturi E. (2009) Molecular and behavioral analysis of the intron 2 repeat polymorphism in the canine dopamine D4 receptor gene. Genes, Brain and Behavior 8: 330–336.
+
+Ito H., Nara H., Inoue-Murayama M. et al. (2004) Allele frequency distribution of the canine dopamine receptor D4 gene exon III and I in 23 breeds. Journal of Veterinary Medical Science 66: 815– 20.
+
+Malkemper EP, Topinka V, Burda H. (2015). A behavioral audiogram of the red fox (Vulpes vulpes). Hear Res. 320:30-7. doi: 10.1016/j.heares.2014.12.001. 
+
+Sadakata, T., Washida, M., Iwayama, Y., Shoji, S., Sato, Y., Ohkura, T., Katoh-Semba, R., Nakajima, M., Sekine, Y., Tanaka, M., Nakamura, K., Iwata, Y., Tsuchiya, K. J., Mori, N., Detera-Wadleigh, S. D., Ichikawa, H., Itohara, S., Yoshikawa, T., & Furuichi, T. (2007). Autistic-like phenotypes in Cadps2-knockout mice and aberrant CADPS2 splicing in autistic patients. The Journal of Clinical Investigation 117: 931–943. 
+
+Tovo-Rodrigues L, Rohde LA, Menezes AM, Polanczyk GV, Kieling C, Genro JP, Anselmi L, Hutz MH. (2013). DRD4 rare variants in Attention-Deficit/Hyperactivity Disorder (ADHD): further evidence from a birth cohort study. PLoS One 8:e85164
