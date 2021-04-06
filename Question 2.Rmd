@@ -11,6 +11,7 @@ This script will evaluate the influence of age on the expression of different pe
 
 ```{r}
 traits_dat <- read.csv("traits.csv") #loading in my data
+traits_dat$Age <- as.numeric(traits_dat$Age)
 ```
 
 ```{r}
@@ -22,7 +23,7 @@ library(cowplot)
 
 ### Creating graphs to evaluate the distribution of age across each behavioural trait:
 
-```{r fig.height = 8, warning = FALSE}
+```{r fig.height = 7, warning = FALSE}
 #this loop creates a scatter plot for each behavioural trait vs age
 for (i in 1:length(traits_dat)) {
   plot <- ggplot(data = traits_dat,
@@ -47,39 +48,63 @@ We will be determining whether age has a significant effect on the expression of
 #create subset of the behaviours we are analyzing
 behaviours <- names(traits_dat)[8:19]
 
-#create a blank data frame to hold the data for the ANOVA tests
-age_anovas <- data.frame(matrix(nrow = 12, ncol = 3))
-names(age_anovas) <- c("Behavioural_Trait", "F_value", "P_value")
+#create a blank data frame to hold the data for our analyses
+age_data <- data.frame(matrix(nrow = 12, ncol = 4))
+names(age_data) <- c("Behavioural_Trait", "F_value", "Adj_R2", "P_value")
 
 #loop to iterate through each trait and evaluate the influence of age
 for (i in 1:length(behaviours)) {
-  #create object of behaviours ~ Age to plug into ANOVA
+  #create linear models to plug into analyses
   lms <- paste(behaviours[i], "~ Age")
-  #perform ANOVA tests using lms object
-  analyses <- aov(as.formula(lms), data = traits_dat)
-  #store this data in the blank matrix
+  #perform linear analyses using lms object
+  analyses <- summary(lm(as.formula(lms), data = traits_dat))
+  
   #store behaviour names
-  age_anovas$Behavioural_Trait[i] <- behaviours[i]
+  age_data$Behavioural_Trait[i] <- behaviours[i]
   #store F values
-  age_anovas$F_value[i] <- summary(analyses)[[1]][["F value"]]
-  #store p values
-  age_anovas$P_value[i] <- summary(analyses)[[1]][["Pr(>F)"]]
+  age_data$F_value[i] <- analyses$fstatistic
+  #store adjusted R2 values
+  age_data$Adj_R2[i] <- analyses$adj.r.squared
+  #compute and store p values
+  age_data$P_value[i] <- pf(analyses$fstatistic[1],
+                            analyses$fstatistic[2],
+                            analyses$fstatistic[3],
+                            lower.tail = F)
+  
 }
 
-#print ANOVA results
-print(age_anovas)
+#print linear regression results
+print(age_data)
 ```
 
 
-### Graphing the ANOVA results
+### Graphing the linear regression results
+
+```{r}
+#graph R2 values for influence of age vs behavioural traits
+ggplot(age_data, aes(x = Behavioural_Trait, y = Adj_R2)) +
+  geom_bar(stat = "identity") +
+  theme_classic()
+```
+
 
 ```{r}
 #graph p values for influence of age vs behavioural traits
-ggplot(age_anovas, aes(x = Behavioural_Trait, y = P_value)) +
+ggplot(age_data, aes(x = Behavioural_Trait, y = P_value)) +
   geom_bar(stat = "identity") +
   theme_classic() +
   geom_hline(yintercept = 0.05, colour = "red") #add line at p = 0.05 to show significant values
 ```
+
+
+
+
+
+
+
+
+
+
 
 
 
