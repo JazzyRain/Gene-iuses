@@ -1,0 +1,76 @@
+---
+title: "Question 4a"
+author: "Rain Zhu, Zach Lehman"
+date: "05/04/2021"
+output: html_document
+---
+
+## Introduction
+This R markdown file that investigates the phylogeneticrelationship of canis lupus familiaris based on a conserved gene: COX1.
+```{r}
+##load library setup 
+library(BiocManager)
+library(dplyr)
+library(genbankr) 
+library(rentrez)
+library(annotate)
+library(ape)
+library(reshape2)
+library(ggplot2)
+library(ggtree)
+```
+
+### COX1 BLAST 
+
+```{r}
+mtID<-GBAccession("NC_002008.4") #using NCBI I searched for COX1, and canis lupus familiaris [organism], i find this accession number
+mtRead<-readGenBank(mtID) #use the accession number to browse through the gene bank 
+mtRead@genes[3] #since COX1, our reference gene of interest, is 3rd on the list, we can index it to see the exact range of the gene. The IRange given is 5349-6893. So let's snip to be just this range!
+
+mt<-entrez_fetch(dbfrom="gene", id="NC_002008.4", db="nuccore", rettype="fasta") #download the COX1 reference genome from Genbank with the accession NC_002008.4
+mtSeq<-gsub("^>.*genome\\n([ATCG].*)","\\1",mt)#find the actual DNA sequence by capturing only the parts containing ATCG (after the word "genome", the last word in the name)
+mtSeq<-gsub("\\n", "",mtSeq)#removing all the new line characters so that it is not cut in pieces
+for(i in 1:nchar(mtSeq)){#for loop that runs through every character in the sequence
+  if(i<5349){#for every time the number is smaller than 5349 (the position where the COX1 begins)
+    COX1<-sub("\\w", "", mtSeq)## remove base pairs from beginning 
+  } else if(i>6893){#for every time the number is larger than 6893 (the position where the COX1 ends)
+    COX1<-sub("\\w$", "", COX1)##remove base pairs from the end 
+  }
+}
+
+##Pairwise alignment
+COX1BLAST<-blastSequences(COX1, as='data.frame', hitListSize=1600, timeout=1000) #pairwise alignment search using our gene 
+##multiple alignment
+ COXHitsDF<-data.frame(ID=COX1BLAST$Hit_def, Seq=COX1BLAST$Hsp_hseq, stringsAsFactors=FALSE)
+##formating the ID
+COXHitsDF$ID <- gsub("isolate.*|haplotype.*|mitochondrial.*|genome.*|mitochondrion.*", "", COXHitsDF$ID)## filter out different genes from the same species by removing the part that indicate the genetic difference, keeping only the species name
+
+COXHitsDF$ID<-gsub("Canis lupus familiaris(.+)","Canis lupus hodophilax", COXHitsDF$ID)## filter out different genes from the same species by removing the part that indicate the genetic difference, keeping only the species name
+
+COXHitsDF$ID<-gsub("Canis lupus hodophilax(.+)","Canis lupus hodophilax", COXHitsDF$ID)
+COXHitsDF$ID<- gsub("Canis lupus familiaris(.+)","Canis lupus familiaris", COXHitsDF$ID)## filter out different genes from the same species by removing the part that indicate the genetic difference, keeping only the species name
+
+COXHitsDF <- COXHitsDF %>% distinct(ID, .keep_all = TRUE)## keep only distinct species and remove identical - helpful because we were getting a lot of hits from other dog breeds rather than other species
+```
+
+### COX1 muscle + alignemnt inspection + generate distance matrix 
+
+```{r}
+COXHitsDNA<-sapply(COXHitsDF$Seq, strsplit, split="") #convert the object to one with seperate column for each basepair using strsplit()and sapply() to split the DA for each row
+names(COXHitsDNA)<-COXHitsDF$ID#changing the name to species name
+COXHitsDNA<-as.DNAbin(COXHitsDNA) #convert it into a DNAbin object 
+COXAlign<-muscle(COXHitsDNA) #run muscle on DNAbin object, allowing alignment of canis lupus sequence with blast searches 
+checkAlignment(COXAlign, what = 1)#inspect the alignment 
+COXDM<-dist.dna(COXAlign, model="K80") #use distance model K80, this estimates a pairwise distance matrix from the sequence data
+COXDMmat<-as.matrix(COXDM)##generate matrix
+```
+
+### Visualization with ggtree
+```{r}
+COXTree<-njs(COXDM) #neighbour joining 
+COX1Tree<-ggtree(COXTree, layout="rectangular", size=0.02)+geom_tiplab()+ xlim(0, 0.2)  #generate the phylogenetic tree using ggtree(), arranged in rectangular form with tip labels and resized appropriately for legibility
+COX1Tree ##call out the tree
+
+
+ggsave(filename = "COX1 Alignment.pdf" , device = "pdf", width = 20, height = 12 , units = "in" , limitsize = FALSE)##save the tree as pdf
+```

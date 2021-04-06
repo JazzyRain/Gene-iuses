@@ -221,4 +221,13 @@ print(resultsAtt)
 print(TukeyAtt)
 ```
 
+Coat Colour:
+	When comparing our predictor variables to different coat colours, there was a significant difference in the level of agitation and trainability while no significant differences were found when looking at non-owner directed aggression and attention seeking. It was determined that black coloured Labradors had the lowest level of agitation when compared to both chocolate and yellow individuals. Furthermore, chocolate Labradors displayed the highest level of agitation between the three coat colours. Also, it was found that chocolate Labradors had significantly lower levels of trainability when compared to both yellow and black Labradors. 
+
+Gender Status: 
+When comparing predictor variables to gender status, a significant difference was detected for non-owner directed aggression, trainability, and attention seeking while no significant difference in agitation was found. It was determined that neutered and non-neutered females displayed significantly higher levels of non-owner directed aggression when compared to non-neutered males. Also, it was determined that neutered males were significantly less trainable than non-neutered males and the same relationship was observed for non-neutered and neutered females. When looking at differences in attention seeking, it was determined that neutered females had significantly lower levels of attention seeking than non-neutered females and non-neutered males.
+
+Health Status: 
+	When comparing predictor variables to health status, significant differences were found for non-owner directed aggression, trainability, and attention seeking while no significant difference was found in the level of agitation. Interestingly, it was discovered that individuals with health problems displayed significantly less non-owner directed aggression when compared to healthy individuals. Also, it was determined that individuals with health problems were significantly more trainable compared to healthy individuals. Furthermore, healthy individuals displayed significantly more attention seeking compared to non-healthy individuals. 
+
 
