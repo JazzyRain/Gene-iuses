@@ -1,4 +1,4 @@
----
+====---
 title: "Question 4a"
 author: "Rain Zhu, Zach Lehman"
 date: "05/04/2021"
@@ -41,11 +41,11 @@ for(i in 1:nchar(mtSeq)){#for loop that runs through every character in the sequ
 ##Pairwise alignment
 COX1BLAST<-blastSequences(COX1, as='data.frame', hitListSize=1600, timeout=1000) #pairwise alignment search using our gene 
 ##multiple alignment
-COXHitsDF<-data.frame(ID=COX1BLAST$Hit_def, Seq=COX1BLAST$Hsp_hseq, stringsAsFactors=FALSE)
+ COXHitsDF<-data.frame(ID=COX1BLAST$Hit_def, Seq=COX1BLAST$Hsp_hseq, stringsAsFactors=FALSE)
 ##formating the ID
 COXHitsDF$ID <- gsub("isolate.*|haplotype.*|mitochondrial.*|genome.*|mitochondrion.*", "", COXHitsDF$ID)## filter out different genes from the same species by removing the part that indicate the genetic difference, keeping only the species name
 COXHitsDF$ID<-gsub("Canis lupus hodophilax(.+)","Canis lupus hodophilax", COXHitsDF$ID)
-COXHitsDF$ID<- gsub("Canis lupus familiaris(.+)","Canis lupus hodophilax", COXHitsDF$ID)## filter out different genes from the same species by removing the part that indicate the genetic difference, keeping only the species name
+COXHitsDF$ID<- gsub("Canis lupus familiaris(.+)","Canis lupus familiaris", COXHitsDF$ID)## filter out different genes from the same species by removing the part that indicate the genetic difference, keeping only the species name
 
 COXHitsDF <- COXHitsDF %>% distinct(ID, .keep_all = TRUE)## keep only distinct species and remove identical 
 ```
