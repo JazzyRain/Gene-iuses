@@ -32,9 +32,9 @@ mtSeq<-gsub("^>.*genome\\n([ATCG].*)","\\1",mt)#find the actual DNA sequence by 
 mtSeq<-gsub("\\n", "",mtSeq)#removing all the new line characters so that it is not cut in pieces
 for(i in 1:nchar(mtSeq)){#for loop that runs through every character in the sequence
   if(i<5349){#for every time the number is smaller than 5349 (the position where the COX1 begins)
-    COX1<-sub("\\w", "", mtSeq)## remove b from beginning 
+    COX1<-sub("\\w", "", mtSeq)## remove base pairs from beginning 
   } else if(i>6893){#for every time the number is larger than 6893 (the position where the COX1 ends)
-    COX1<-sub("\\w$", "", COX1)##remove bp from the end 
+    COX1<-sub("\\w$", "", COX1)##remove base pairs from the end 
   }
 }
 
@@ -50,7 +50,7 @@ COXHitsDF$ID<-gsub("Canis lupus familiaris(.+)","Canis lupus hodophilax", COXHit
 COXHitsDF$ID<-gsub("Canis lupus hodophilax(.+)","Canis lupus hodophilax", COXHitsDF$ID)
 COXHitsDF$ID<- gsub("Canis lupus familiaris(.+)","Canis lupus familiaris", COXHitsDF$ID)## filter out different genes from the same species by removing the part that indicate the genetic difference, keeping only the species name
 
-COXHitsDF <- COXHitsDF %>% distinct(ID, .keep_all = TRUE)## keep only distinct species and remove identical 
+COXHitsDF <- COXHitsDF %>% distinct(ID, .keep_all = TRUE)## keep only distinct species and remove identical - helpful because we were getting a lot of hits from other dog breeds rather than other species
 ```
 
 ### COX1 muscle + alignemnt inspection + generate distance matrix 
@@ -68,7 +68,7 @@ COXDMmat<-as.matrix(COXDM)##generate matrix
 ### Visualization with ggtree
 ```{r}
 COXTree<-njs(COXDM) #neighbour joining 
-COX1Tree<-ggtree(COXTree, layout="rectangular", size=0.02)+geom_tiplab()+ xlim(0, 0.2)  #generate the phylogenetic tree using ggtree(), arranged in rectangular form with tip labels 
+COX1Tree<-ggtree(COXTree, layout="rectangular", size=0.02)+geom_tiplab()+ xlim(0, 0.2)  #generate the phylogenetic tree using ggtree(), arranged in rectangular form with tip labels and resized appropriately for legibility
 COX1Tree ##call out the tree
 
 
