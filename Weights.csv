@@ -1,0 +1,13 @@
+Code,Trait,Weight,Rationale
+1,Agitated,6666,"Agitated when ignored: Somewhat important, might make for a very difficult pet at certain situations"
+2,AttenSeek,1111,Attention seeking behaviour: not a life and death behaviour trait if a pet doesn't seek attention all the time
+3,Bark,8888,"Barking tendencies: important, could be disruptive depending on housing/social situation and neighbourhoods"
+4,Excite,4444,Excitatbility: somewhat important but doesn't have serious consequences
+5,Fetch,1111,"Fetching: no serious social consequences, just about entertainment"
+6,HO_Fear,6666,Human & object fear: quite important when immersed in a human environment
+7,NoiseF,3333,"Noise fear: somewhat important, much of the negative externalities are encompassed by other fears"
+8,NO_Agg,5555,"Non-owner directed aggression: would be problematic when immersed in human social situations, or another extreme would be being able to sense danger from stranger"
+9,O_Agg,888,"Owner-directed aggression: very important, would make for a very difficult pet"
+10,SepAnx,2222,"Separation anxiety: not too important, wouldn’t have serious consequences"
+11,Train,9999,"Trainability: most important, training in household, training in social situations etc"
+12,UnBeh,2222,"Unusual behaviour, not too important because again, much of the negative externalities are encompassed by othe behaviours"
