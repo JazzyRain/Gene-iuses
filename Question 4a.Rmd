@@ -1,4 +1,4 @@
-====---
+---
 title: "Question 4a"
 author: "Rain Zhu, Zach Lehman"
 date: "05/04/2021"
@@ -49,7 +49,6 @@ COXHitsDF$ID<-gsub("Canis lupus familiaris(.+)","Canis lupus hodophilax", COXHit
 
 COXHitsDF$ID<-gsub("Canis lupus hodophilax(.+)","Canis lupus hodophilax", COXHitsDF$ID)
 COXHitsDF$ID<- gsub("Canis lupus familiaris(.+)","Canis lupus familiaris", COXHitsDF$ID)## filter out different genes from the same species by removing the part that indicate the genetic difference, keeping only the species name
-
 
 COXHitsDF <- COXHitsDF %>% distinct(ID, .keep_all = TRUE)## keep only distinct species and remove identical 
 ```
