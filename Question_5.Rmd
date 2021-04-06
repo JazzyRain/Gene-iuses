@@ -23,6 +23,7 @@ output: html_document
 10. Separation anxiety
 11. Trainability
 12. Unusual behaviour
+
 #### The traits were measure in a scale from 1-5. During the encoding of these measurements into binary, these measurements were rounded to the nearest whole number. 
 
 #### These traits were then rated in importance of social consequences of the dogs as a pet (ease of having this dog as a pet).
@@ -88,7 +89,7 @@ ggplot(data = DogDistMat_2, aes(x=Var1, y=Var2, fill=value)) +
   geom_tile()+scale_fill_gradientn(colours=c("white","blue","yellow","red")) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
 
-ggsave(path = "./Question_3_Figures", filename = "3C_Distance matrix.pdf" , device = "pdf", width = 20, height = 12 , units = "in" , limitsize = FALSE)##save the plot as pdf
+ggsave(path = "./Question_5_Figures", filename = "3C_Distance matrix.pdf" , device = "pdf", width = 20, height = 12 , units = "in" , limitsize = FALSE)##save the plot as pdf
 ```
 
 #### Making the Tree
@@ -97,7 +98,7 @@ library(ggtree)
 DogTree<-fastme.bal(DogDist) #ME
 ggtree(DogTree,layout="circular",branch.length='none') +geom_tiplab(size=2,aes(angle=angle)) 
 
-ggsave(path = "./Question_3_Figures", filename = "3C_Dog_Tree.pdf" , device = "pdf", width = 20, height = 12 , units = "in" , limitsize = FALSE)##save the tree as pdf
+ggsave(path = "./Question_5_Figures", filename = "3C_Dog_Tree.pdf" , device = "pdf", width = 20, height = 12 , units = "in" , limitsize = FALSE)##save the tree as pdf
 ```
 
 
