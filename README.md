@@ -13,10 +13,11 @@
  Question 1.Rmd  
  Question 2.html - Is age correlated with an increase/decrease in certain traits? (Jordan Rutherford)  
  Question 2.Rmd  
- Question 3.Rmd - Which factors are most predictive of trainability, non-owner-directed aggression, agitation when ignored, attention seeking (Damian Bourne/Zach Lehman)  
- Question_3_Figures - Figures from Question 3 (Damian Bourne/Zach Lehman)  
+ Question 3.Rmd - Which factors are most predictive of trainability, non-owner-directed aggression, agitation when ignored, attention seeking (Damian Bourne/Zach Lehman)
+ Question_3C.Rmd - Visualizing the traits most important for the domestication of dogs and how some traits may be used to make predictions about a dog's future behaviour (Janis Cheng)
+ Question_3_Figures - Figures from Question 3 (Damian Bourne/Zach Lehman)  and Question 3C (Janis)
+ Question 4a.Rmd -  Use cytochrome oxidase I gene to create a evolutionarily accurate phylogenetic tree (Rain Zhu/Zach Lehman)
  Question 4b.Rmd - Are SNPs in genes correlated with behavioural traits indicative of evolutionary relationships?   
- Alignment.R -  Use cytochrome oxidase I gene to create a evolutionarily accurate phylogenetic tree (Rain Zhu/Zach Lehman)  
  -- Canis lupus familiaris CADPS2, TH and DRD4 gene trees (Alex Tsiofas)  
  -- Are the binary encoded behavioural traits indicative of any patterns across dogs in the study? (Janis Cheng)  
  
